@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Improved Grid Drawing</title>
+    <style>
+      /* Style for the body to center the canvas */
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full viewport height */
+        margin: 0; /* Remove default margin */
+        background-color: #f0f0f0; /* Light gray background */
+      }
+      /* Style for the canvas element */
+      canvas {
+        border: 1px solid #000; /* Black border around the canvas */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Canvas element for drawing -->
+    <canvas id="myCanvas"></canvas>
+    <script>
+      // Configuration constants
+      const GRID_SIZE = 20; // Number of squares in each row and column
+      let CANVAS_SIZE, SQUARE_SIZE; // Variables for canvas size and square size
+      const SMALL_SQUARE_RATIO = 0.5; // Ratio for small squares relative to big squares
+      const BIG_SQUARE_COLOR = "#f69d69"; // Color for big squares (light orange)
+      const SMALL_SQUARE_COLOR = "#f09d09"; // Color for small squares (darker orange)
+      const STROKE_COLOR = "black"; // Color for strokes around squares
+
+      // Canvas setup
+      const myCanvas = document.getElementById("myCanvas"); // Get the canvas element
+      const ctx = myCanvas.getContext("2d"); // Get the 2D drawing context
+
+      // Check if the canvas context is supported
+      if (!ctx) {
+        console.error("Canvas context not supported"); // Log error if not supported
+        throw new Error("Canvas context not supported"); // Throw an error
+      }
+
+      // Function to draw a big square at specified coordinates
+      function drawBigSquare(x, y) {
+        ctx.strokeStyle = BIG_SQUARE_COLOR; // Set stroke color for big squares
+        ctx.strokeRect(x, y, SQUARE_SIZE, SQUARE_SIZE); // Draw the outline of the big square
+      }
+
+      // Function to draw a small square at specified coordinates, with optional fill
+      function drawSmallSquare(x, y, fill = false) {
+        const smallSize = SQUARE_SIZE * SMALL_SQUARE_RATIO; // Calculate size of small square
+        const offset = (SQUARE_SIZE * (1 - SMALL_SQUARE_RATIO)) / 2; // Center small square within big square
+
+        if (fill) {
+          // If fill is true, fill the small square
+          ctx.fillStyle = SMALL_SQUARE_COLOR; // Set fill color for small squares
+          ctx.fillRect(x + offset, y + offset, smallSize, smallSize); // Fill the small square
+        }
+
+        ctx.strokeStyle = STROKE_COLOR; // Set stroke color for small squares
+        ctx.strokeRect(x + offset, y + offset, smallSize, smallSize); // Draw outline of the small square
+      }
+
+      // Function to draw the entire grid of squares
+      function drawGrid() {
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); // Clear the canvas before redrawing
+        for (let row = 0; row < GRID_SIZE; row++) {
+          // Loop through each row
+          for (let col = 0; col < GRID_SIZE; col++) {
+            // Loop through each column
+            const x = col * SQUARE_SIZE; // Calculate x position for the big square
+            const y = row * SQUARE_SIZE; // Calculate y position for the big square
+            drawBigSquare(x, y); // Draw the big square at calculated position
+            drawSmallSquare(x, y, Math.random() > 0.5); // Randomly decide whether to fill a small square
+          }
+        }
+      }
+
+      // Function to resize the canvas and redraw the grid when window is resized
+      function resizeCanvas() {
+        CANVAS_SIZE = Math.min(window.innerWidth, window.innerHeight) * 0.9; // Set canvas size based on viewport dimensions
+        myCanvas.width = myCanvas.height = CANVAS_SIZE; // Set both width and height of canvas to CANVAS_SIZE
+        SQUARE_SIZE = CANVAS_SIZE / GRID_SIZE; // Calculate size of each square based on grid size
+        ctx.lineWidth = 1; // Set line width for drawing
+        drawGrid(); // Redraw the grid after resizing
+      }
+
+      // Event listener to handle window resizing events
+      window.addEventListener("resize", resizeCanvas);
+
+      // Event listener to handle click events on the canvas
+      myCanvas.addEventListener("click", (event) => {
+        const rect = myCanvas.getBoundingClientRect(); // Get bounding rectangle of canvas
+        const x = event.clientX - rect.left; // Calculate x position relative to canvas
+        const y = event.clientY - rect.top; // Calculate y position relative to canvas
+        const col = Math.floor(x / SQUARE_SIZE); // Determine column based on click position
+        const row = Math.floor(y / SQUARE_SIZE); // Determine row based on click position
+
+        console.log(`Clicked square at row ${row}, column ${col}`); // Log clicked position
+
+        drawGrid(); // Redraw the entire grid (you could implement toggling here)
+      });
+
+      // Initial setup: resize and draw grid when page loads
+      resizeCanvas();
+    </script>
+  </body>
+</html>
